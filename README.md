@@ -1,10 +1,16 @@
-# New hotkeys for Don't Starve, Reign of Giants and Shipwrecked
+# New Hotkeys
 
 ## Owner
 
 This mod was originally created by "modding" and it can be found in this [Klei Entertainment Forum](http://forums.kleientertainment.com/topic/64875-mod-additional-hotkeys-for-dont-starve)
 Since the topic is closed I decided to download and do some changes
 If you want to find the original code just access the [First commit](https://github.com/rhinoandre/Hotkeys-Dont-Starve/commit/557f8f4e2ac4bf53a92ac2b184361e724325a08b)
+
+## Compatibility
+
+* Don't Starve
+* Reign of Giants
+* Shipwrecked
 
 ## New Hotkeys
 
