@@ -36,6 +36,13 @@ local handlers =
     end
 }
 
+local player
+if GLOBAL.TheSim:GetGameID() == 'DST' then
+    player = GLOBAL.ThePlayer
+else 
+    player = GLOBAL.GetPlayer()
+end
+
 function ok(input)
     return (GLOBAL.IsPaused()
     or input:IsKeyDown(GLOBAL.KEY_CTRL)
@@ -46,7 +53,6 @@ end
 for key, item in pairs(handlers) do
     GLOBAL.TheInput:AddKeyDownHandler(GLOBAL['KEY_' .. key], function()
         local input  = GLOBAL.TheInput
-        local player = GLOBAL.GetPlayer()
 
         local builder   = player.components.builder
         local inventory = player.components.inventory
