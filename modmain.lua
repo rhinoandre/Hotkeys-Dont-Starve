@@ -44,22 +44,29 @@ function ok(input)
 end
 
 local player
-local Recipe
 function getPlayer()
-    print(GLOBAL.TheSim:GetGameID())
     if player == nil then
         if GLOBAL.TheSim:GetGameID() == "DST" then
             player = GLOBAL.ThePlayer
-            Recipe = GLOBAL.Recipe
         else
             player = GLOBAL.GetPlayer()
-            Recipe = GLOBAL.GetRecipe
         end
     end
     return player
 end
+
+local recipe
+function setRecipe(recipeName)
+    print('setRecipe: ' .. recipeName)
+    if GLOBAL.TheSim:GetGameID() == "DST" then
+        recipe = GLOBAL.GetValidRecipe(recipeName)
+        print('Recipe DST')
+    else
+        recipe =  GLOBAL.GetRecipe(recipeName)
+    end
+end
+
 for key, item in pairs(handlers) do
-    print(TheSim:GetGameID() == "DST")
     GLOBAL.TheInput:AddKeyDownHandler(GLOBAL['KEY_' .. key], function()
         local input  = GLOBAL.TheInput
 
@@ -74,7 +81,6 @@ for key, item in pairs(handlers) do
             item(getPlayer(), inventory)
         else
             local existing = nil
-            local recipe = nil
 
             if itemType == 'table' then
                 for key,specItem in ipairs(item) do
@@ -85,23 +91,23 @@ for key, item in pairs(handlers) do
                     end
                 end
 
-                for key,specItem in ipairs(item) do
-                    recipe = Recipe(specItem)
-                    if recipe then
-                        print('Recipe')
-                        break
-                    end
-                end
+                --for key, specItem in ipairs(item) do
+                --    setRecipe(specItem)
+                --    if recipe then
+                --        print('Recipe')
+                --        break
+                --    end
+                --end
 
             else
                 existing = inventory:FindItem(function(e) return e.prefab == item end)
-                recipe   = Recipe(item)
+                setRecipe(item)
             end
 
             if existing then
                 print("ACTION [" .. key .. "]")
                 inventory:Equip(existing)
-            elseif recipe then
+            else
                 local accessible = builder.accessible_tech_trees
                 local can_build  = nil
                 local known      = nil
@@ -109,17 +115,25 @@ for key, item in pairs(handlers) do
                 local can_do     = nil
 
                 if itemType == 'table' then
+
                     for key,specItem in ipairs(item) do
+                        setRecipe(specItem)
                         can_build   = builder:CanBuild(specItem)
                         known       = builder:KnowsRecipe(specItem)
                         prebuilt    = builder:IsBuildBuffered(specItem)
                         can_do      = prebuilt or can_build and (known or GLOBAL.CanPrototypeRecipe(recipe.level, accessible))
+
+                        print('can_build: ', can_build)
+                        print('Known: ', known)
+                        print('Prebuilt: ', prebuilt)
+                        print('can_do: ', can_do)
                         if can_do then
-                            print('Can build')
                             break
                         end
                     end
                 else
+                    print('single build')
+                    setRecipe(item)
                     can_build   = builder:CanBuild(item)
                     known       = builder:KnowsRecipe(item)
                     prebuilt    = builder:IsBuildBuffered(item)
@@ -132,7 +146,7 @@ for key, item in pairs(handlers) do
                         if not known then
                             getPlayer().SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
                             builder:ActivateCurrentResearchMachine()
-                            builder:UnlockRecipe(item)
+                            --builder:UnlockRecipe(item)
                         end
                     end)
                 else
