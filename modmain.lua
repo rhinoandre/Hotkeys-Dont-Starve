@@ -57,10 +57,8 @@ end
 
 local recipe
 function setRecipe(recipeName)
-    print('setRecipe: ' .. recipeName)
     if GLOBAL.TheSim:GetGameID() == "DST" then
         recipe = GLOBAL.GetValidRecipe(recipeName)
-        print('Recipe DST')
     else
         recipe =  GLOBAL.GetRecipe(recipeName)
     end
@@ -86,18 +84,9 @@ for key, item in pairs(handlers) do
                 for key,specItem in ipairs(item) do
                     existing = inventory:FindItem(function(e) return e.prefab == specItem end)
                     if existing then
-                        print('existing')
                         break
                     end
                 end
-
-                --for key, specItem in ipairs(item) do
-                --    setRecipe(specItem)
-                --    if recipe then
-                --        print('Recipe')
-                --        break
-                --    end
-                --end
 
             else
                 existing = inventory:FindItem(function(e) return e.prefab == item end)
@@ -122,17 +111,11 @@ for key, item in pairs(handlers) do
                         known       = builder:KnowsRecipe(specItem)
                         prebuilt    = builder:IsBuildBuffered(specItem)
                         can_do      = prebuilt or can_build and (known or GLOBAL.CanPrototypeRecipe(recipe.level, accessible))
-
-                        print('can_build: ', can_build)
-                        print('Known: ', known)
-                        print('Prebuilt: ', prebuilt)
-                        print('can_do: ', can_do)
                         if can_do then
                             break
                         end
                     end
                 else
-                    print('single build')
                     setRecipe(item)
                     can_build   = builder:CanBuild(item)
                     known       = builder:KnowsRecipe(item)
@@ -141,7 +124,6 @@ for key, item in pairs(handlers) do
                 end
 
                 if recipe.placer and can_do then
-                    print("Doing")
                     builder:MakeRecipe(recipe, GLOBAL.Vector3(getPlayer().Transform:GetWorldPosition()), getPlayer():GetRotation(), function()
                         if not known then
                             getPlayer().SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
