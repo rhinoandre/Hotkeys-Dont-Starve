@@ -43,23 +43,44 @@ function ok(input)
     or input:IsKeyDown(GLOBAL.KEY_ALT))
 end
 
+local player
+function getPlayer()
+    if player == nil then
+        if GLOBAL.TheSim:GetGameID() == "DST" then
+            player = GLOBAL.ThePlayer
+        else
+            player = GLOBAL.GetPlayer()
+        end
+    end
+    return player
+end
+
+local recipe
+function setRecipe(recipeName)
+    print('setRecipe: ' .. recipeName)
+    if GLOBAL.TheSim:GetGameID() == "DST" then
+        recipe = GLOBAL.GetValidRecipe(recipeName)
+        print('Recipe DST')
+    else
+        recipe =  GLOBAL.GetRecipe(recipeName)
+    end
+end
+
 for key, item in pairs(handlers) do
     GLOBAL.TheInput:AddKeyDownHandler(GLOBAL['KEY_' .. key], function()
         local input  = GLOBAL.TheInput
-        local player = GLOBAL.GetPlayer()
 
-        local builder   = player.components.builder
-        local inventory = player.components.inventory
+        local builder   = getPlayer().components.builder
+        local inventory = getPlayer().components.inventory
         local itemType = type(item)
 
         if ok(GLOBAL.TheInput) then return end
 
         if itemType == 'function' then
             print("ACTION [ " .. key .. " ]")
-            item(player, inventory)
+            item(getPlayer(), inventory)
         else
             local existing = nil
-            local recipe = nil
 
             if itemType == 'table' then
                 for key,specItem in ipairs(item) do
@@ -70,23 +91,23 @@ for key, item in pairs(handlers) do
                     end
                 end
 
-                for key,specItem in ipairs(item) do
-                    recipe = GLOBAL.GetRecipe(specItem)
-                    if recipe then
-                        print('Recipe')
-                        break
-                    end
-                end
+                --for key, specItem in ipairs(item) do
+                --    setRecipe(specItem)
+                --    if recipe then
+                --        print('Recipe')
+                --        break
+                --    end
+                --end
 
             else
                 existing = inventory:FindItem(function(e) return e.prefab == item end)
-                recipe   = GLOBAL.GetRecipe(item)
+                setRecipe(item)
             end
 
             if existing then
                 print("ACTION [" .. key .. "]")
                 inventory:Equip(existing)
-            elseif recipe then
+            else
                 local accessible = builder.accessible_tech_trees
                 local can_build  = nil
                 local known      = nil
@@ -94,17 +115,25 @@ for key, item in pairs(handlers) do
                 local can_do     = nil
 
                 if itemType == 'table' then
+
                     for key,specItem in ipairs(item) do
+                        setRecipe(specItem)
                         can_build   = builder:CanBuild(specItem)
                         known       = builder:KnowsRecipe(specItem)
                         prebuilt    = builder:IsBuildBuffered(specItem)
                         can_do      = prebuilt or can_build and (known or GLOBAL.CanPrototypeRecipe(recipe.level, accessible))
+
+                        print('can_build: ', can_build)
+                        print('Known: ', known)
+                        print('Prebuilt: ', prebuilt)
+                        print('can_do: ', can_do)
                         if can_do then
-                            print('Can build')
                             break
                         end
                     end
                 else
+                    print('single build')
+                    setRecipe(item)
                     can_build   = builder:CanBuild(item)
                     known       = builder:KnowsRecipe(item)
                     prebuilt    = builder:IsBuildBuffered(item)
@@ -113,15 +142,15 @@ for key, item in pairs(handlers) do
 
                 if recipe.placer and can_do then
                     print("Doing")
-                    builder:MakeRecipe(recipe, GLOBAL.Vector3(player.Transform:GetWorldPosition()), player:GetRotation(), function()
+                    builder:MakeRecipe(recipe, GLOBAL.Vector3(getPlayer().Transform:GetWorldPosition()), getPlayer():GetRotation(), function()
                         if not known then
-                            player.SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
+                            getPlayer().SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
                             builder:ActivateCurrentResearchMachine()
-                            builder:UnlockRecipe(item)
+                            --builder:UnlockRecipe(item)
                         end
                     end)
                 else
-                    GLOBAL.DoRecipeClick(player, recipe)
+                    GLOBAL.DoRecipeClick(getPlayer(), recipe)
                 end
 
             end
