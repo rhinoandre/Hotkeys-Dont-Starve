@@ -36,13 +36,6 @@ local handlers =
     end
 }
 
-local player
-if GLOBAL.TheSim:GetGameID() == 'DST' then
-    player = GLOBAL.ThePlayer
-else 
-    player = GLOBAL.GetPlayer()
-end
-
 function ok(input)
     return (GLOBAL.IsPaused()
     or input:IsKeyDown(GLOBAL.KEY_CTRL)
@@ -50,19 +43,35 @@ function ok(input)
     or input:IsKeyDown(GLOBAL.KEY_ALT))
 end
 
+local player
+local Recipe
+function getPlayer()
+    print(GLOBAL.TheSim:GetGameID())
+    if player == nil then
+        if GLOBAL.TheSim:GetGameID() == "DST" then
+            player = GLOBAL.ThePlayer
+            Recipe = GLOBAL.Recipe
+        else
+            player = GLOBAL.GetPlayer()
+            Recipe = GLOBAL.GetRecipe
+        end
+    end
+    return player
+end
 for key, item in pairs(handlers) do
+    print(TheSim:GetGameID() == "DST")
     GLOBAL.TheInput:AddKeyDownHandler(GLOBAL['KEY_' .. key], function()
         local input  = GLOBAL.TheInput
 
-        local builder   = player.components.builder
-        local inventory = player.components.inventory
+        local builder   = getPlayer().components.builder
+        local inventory = getPlayer().components.inventory
         local itemType = type(item)
 
         if ok(GLOBAL.TheInput) then return end
 
         if itemType == 'function' then
             print("ACTION [ " .. key .. " ]")
-            item(player, inventory)
+            item(getPlayer(), inventory)
         else
             local existing = nil
             local recipe = nil
@@ -77,7 +86,7 @@ for key, item in pairs(handlers) do
                 end
 
                 for key,specItem in ipairs(item) do
-                    recipe = GLOBAL.GetRecipe(specItem)
+                    recipe = Recipe(specItem)
                     if recipe then
                         print('Recipe')
                         break
@@ -86,7 +95,7 @@ for key, item in pairs(handlers) do
 
             else
                 existing = inventory:FindItem(function(e) return e.prefab == item end)
-                recipe   = GLOBAL.GetRecipe(item)
+                recipe   = Recipe(item)
             end
 
             if existing then
@@ -119,15 +128,15 @@ for key, item in pairs(handlers) do
 
                 if recipe.placer and can_do then
                     print("Doing")
-                    builder:MakeRecipe(recipe, GLOBAL.Vector3(player.Transform:GetWorldPosition()), player:GetRotation(), function()
+                    builder:MakeRecipe(recipe, GLOBAL.Vector3(getPlayer().Transform:GetWorldPosition()), getPlayer():GetRotation(), function()
                         if not known then
-                            player.SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
+                            getPlayer().SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
                             builder:ActivateCurrentResearchMachine()
                             builder:UnlockRecipe(item)
                         end
                     end)
                 else
-                    GLOBAL.DoRecipeClick(player, recipe)
+                    GLOBAL.DoRecipeClick(getPlayer(), recipe)
                 end
 
             end
