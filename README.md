@@ -11,6 +11,7 @@ If you want to find the original code just access the [First commit](https://git
 * Don't Starve
 * Reign of Giants
 * Shipwrecked
+* Don't Starve Together
 
 ## New Hotkeys
 
