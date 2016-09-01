@@ -36,11 +36,15 @@ local handlers =
     end
 }
 
-function ok(input)
-    return (GLOBAL.IsPaused()
-    or input:IsKeyDown(GLOBAL.KEY_CTRL)
-    or input:IsKeyDown(GLOBAL.KEY_SHIFT)
-    or input:IsKeyDown(GLOBAL.KEY_ALT))
+function ok(input, key)
+    -- Machete exists only in Shipwrecked DLC
+    local onlyInShipwrecked = (GLOBAL.TheSim:GetGameID() == "DST" or GLOBAL.IsDLCEnabled(GLOBAL.REIGN_OF_GIANTS)) and key == "F4"
+
+    return ((GLOBAL.IsPaused()
+        or input:IsKeyDown(GLOBAL.KEY_CTRL)
+        or input:IsKeyDown(GLOBAL.KEY_SHIFT)
+        or input:IsKeyDown(GLOBAL.KEY_ALT))
+        or onlyInShipwrecked)
 end
 
 local player
@@ -66,13 +70,12 @@ end
 
 for key, item in pairs(handlers) do
     GLOBAL.TheInput:AddKeyDownHandler(GLOBAL['KEY_' .. key], function()
-        local input  = GLOBAL.TheInput
-
+        local input     = GLOBAL.TheInput
         local builder   = getPlayer().components.builder
         local inventory = getPlayer().components.inventory
-        local itemType = type(item)
+        local itemType  = type(item)
 
-        if ok(GLOBAL.TheInput) then return end
+        if ok(GLOBAL.TheInput, key) then return end
 
         if itemType == 'function' then
             print("ACTION [ " .. key .. " ]")

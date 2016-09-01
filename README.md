@@ -18,7 +18,7 @@ If you want to find the original code just access the [First commit](https://git
 * F1 - Torch
 * F2 - Luxury Axe or Axe
 * F3 - Luxury Pickaxe or Pickaxe
-* F4 - Luxury Machete or Machete
+* F4 - Luxury Machete or Machete (Only in Shipwrecked)
 * F5 - Luxury Shovel or Shovel
 * F6 - Hammer
 * F7 - Create a campfire
